@@ -10,7 +10,12 @@ export const serverIn = z.object({
 export type ServerIn = z.infer<typeof serverIn>;
 
 export const serverOutWebsite = z.object({
-  name: z.string().trim().toLowerCase(),
+  name: z
+    .string()
+    .trim()
+    .min(5, "Name must contain at least 5 character(s)")
+    .toLowerCase()
+    .optional(),
   link: z
     .string()
     .includes("github.com", {

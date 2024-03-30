@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -11,7 +12,6 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { serverIn } from "@/lib/schema";
 import { useEffect, useState } from "react";
-import { useQuery } from "react-query";
 import { absoluteURL, hostName, Status } from "@/lib/utils";
 import Loading from "./Loading";
 
@@ -100,33 +100,64 @@ const CardStatus = ({ projectId }: { projectId: string | null }) => {
     <Card className="w-[400px]">
       <CardHeader>
         <CardTitle className="text-center">Status</CardTitle>
+        {failed && (
+          <CardDescription className="text-center text-red-700">
+            Deploying your new website failed. Please try an different project
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex items-center">
-          {Uploaded ? <CircleCheckBig color="green" /> : <Loading />}
+          {Uploaded ? (
+            <CircleCheckBig color="green" />
+          ) : !failed ? (
+            <Loading />
+          ) : (
+            <CircleX color="red" />
+          )}
           {Uploaded ? (
             <span className="ml-2">Project Uploaded Successfully!</span>
           ) : (
-            <span className="ml-2">Copying Project ...</span>
+            <span className="ml-2">
+              {!failed ? "Copying Project ..." : "Copying Project Failed"}
+            </span>
           )}
         </div>
         {buildingStart && (
           <div className="flex items-center">
-            {buildingSuccess ? <CircleCheckBig color="green" /> : <Loading />}
+            {buildingSuccess ? (
+              <CircleCheckBig color="green" />
+            ) : !failed ? (
+              <Loading />
+            ) : (
+              <CircleX color="red" />
+            )}
             {buildingSuccess ? (
               <span className="ml-2">Website Successfully Build!</span>
             ) : (
-              <span className="ml-2">Building Website ...</span>
+              <span className="ml-2">
+                {!failed ? "Building Website ..." : "Building Website Failed"}
+              </span>
             )}
           </div>
         )}
         {buildingSuccess && (
           <div className="flex items-center">
-            {deployed ? <CircleCheckBig color="green" /> : <Loading />}
+            {deployed ? (
+              <CircleCheckBig color="green" />
+            ) : !failed ? (
+              <Loading />
+            ) : (
+              <CircleX color="red" />
+            )}
             {deployed ? (
               <span className="ml-2">Website Successfully Deployed!</span>
             ) : (
-              <span className="ml-2">Deploying Your Website ...</span>
+              <span className="ml-2">
+                {!failed
+                  ? "Deploying Your Website ..."
+                  : "Deploying Your Website Failed"}
+              </span>
             )}
           </div>
         )}

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { hostName } from "@/lib/utils";
 import { useMutation } from "react-query";
-import { serverOutWebsite, ServerOutWebsite, serverIn } from "@/lib/schema";
+import { serverOutWebsite, ServerOutWebsite } from "@/lib/schema";
 import {
   Card,
   CardContent,
@@ -84,7 +84,7 @@ const CardWithForm = ({ start, setStart, setProjectId }: CardWithFormProps) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = {
-      name,
+      name: name === "" ? undefined : name,
       link,
     };
     const zodData = serverOutWebsite.safeParse(data);
