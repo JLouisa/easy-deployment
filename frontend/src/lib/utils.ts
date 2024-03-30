@@ -21,13 +21,18 @@ export enum SuccessCodes {
 }
 
 export enum Status {
-  CLONING = "CLONING",
+  STARTED = "STARTED",
   UPLOADED = "UPLOADED",
-  BUILDING = "BUILDING",
+  BUILDING_START = "BUILDING_START",
+  BUILD_SUCCESS = "BUILD_SUCCESS",
   DEPLOYED = "DEPLOYED",
   FAILED = "FAILED",
 }
 
-export function hostName(api: string) {
-  return `http://localhost:3000${api}`;
+export function hostName(api: string, port: number = 3000) {
+  return `http://localhost:${port}${api}`;
+}
+
+export function absoluteURL(api: string, ID: string = "13yungca") {
+  return `http://${ID}.testingmymachine.com:3001${api}`;
 }
