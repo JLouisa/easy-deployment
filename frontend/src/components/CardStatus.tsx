@@ -7,13 +7,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CircleCheckBig, CircleX } from "lucide-react";
+import { Circle, CircleCheckBig, CircleX, Copy } from "lucide-react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { serverIn } from "@/lib/schema";
 import { useEffect, useState } from "react";
 import { absoluteURL, hostName, Status } from "@/lib/utils";
 import Loading from "./Loading";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 const POLLING_INTERVAL = 1000; // Polling interval in milliseconds
 
@@ -31,7 +38,7 @@ async function getStatus(id: string) {
 }
 
 const CardStatus = ({ projectId }: { projectId: string | null }) => {
-  const [Uploaded, setUploaded] = useState<boolean>(false);
+  const [uploaded, setUploaded] = useState<boolean>(false);
   const [buildingStart, setBuildingStart] = useState<boolean>(false);
   const [buildingSuccess, setBuildingSuccess] = useState<boolean>(false);
   const [deployed, setDeployed] = useState<boolean>(false);
@@ -48,13 +55,13 @@ const CardStatus = ({ projectId }: { projectId: string | null }) => {
       setUploaded(true);
     }
     if (data.message === Status.BUILDING_START) {
-      if (!Uploaded) {
+      if (!uploaded) {
         setUploaded(true);
       }
       setBuildingStart(true);
     }
     if (data.message === Status.BUILD_SUCCESS) {
-      if (!Uploaded) {
+      if (!uploaded) {
         setUploaded(true);
       }
       if (!buildingStart) {
@@ -63,7 +70,7 @@ const CardStatus = ({ projectId }: { projectId: string | null }) => {
       setBuildingSuccess(true);
     }
     if (data.message === Status.DEPLOYED) {
-      if (!Uploaded) {
+      if (!uploaded) {
         setUploaded(true);
       }
       if (!buildingStart) {
@@ -108,71 +115,101 @@ const CardStatus = ({ projectId }: { projectId: string | null }) => {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="flex items-center">
-          {Uploaded ? (
+          {uploaded ? (
             <CircleCheckBig color="green" />
           ) : !failed ? (
             <Loading />
           ) : (
             <CircleX color="red" />
           )}
-          {Uploaded ? (
-            <span className="ml-2">Project Uploaded Successfully!</span>
-          ) : (
-            <span className="ml-2">
-              {!failed ? "Copying Project ..." : "Copying Project Failed"}
+          {
+            <span className="ml-2 text-black">
+              {!uploaded
+                ? "Copying Project ..."
+                : !failed
+                ? "Project Uploaded Successfully!"
+                : "Copying Project Failed"}
             </span>
-          )}
+          }
         </div>
-        {buildingStart && (
+        <div className="flex items-center">
+          {!buildingSuccess && !uploaded ? (
+            <Circle color="grey" />
+          ) : buildingSuccess ? (
+            <CircleCheckBig color="green" />
+          ) : !failed ? (
+            <Loading />
+          ) : (
+            <CircleX color="red" />
+          )}
+          <span
+            className={`ml-2 ${uploaded ? "text-black" : "text-slate-500"}`}
+          >
+            {!buildingSuccess
+              ? "Building Website ..."
+              : !failed
+              ? "Website Successfully Build!"
+              : "Building Website Failed"}
+          </span>
+        </div>
+        {
           <div className="flex items-center">
-            {buildingSuccess ? (
+            {!deployed && !buildingSuccess ? (
+              <Circle color="grey" />
+            ) : deployed ? (
               <CircleCheckBig color="green" />
             ) : !failed ? (
               <Loading />
             ) : (
               <CircleX color="red" />
             )}
-            {buildingSuccess ? (
-              <span className="ml-2">Website Successfully Build!</span>
-            ) : (
-              <span className="ml-2">
-                {!failed ? "Building Website ..." : "Building Website Failed"}
-              </span>
-            )}
+            <span
+              className={`ml-2 ${
+                buildingSuccess ? "text-black" : "text-slate-500"
+              }`}
+            >
+              {!deployed
+                ? "Deploying Your Website ..."
+                : !failed
+                ? "Website Successfully Deployed!"
+                : "Deployment of Your Website Failed"}
+            </span>
           </div>
-        )}
-        {buildingSuccess && (
-          <div className="flex items-center">
-            {deployed ? (
-              <CircleCheckBig color="green" />
-            ) : !failed ? (
-              <Loading />
-            ) : (
-              <CircleX color="red" />
-            )}
-            {deployed ? (
-              <span className="ml-2">Website Successfully Deployed!</span>
-            ) : (
-              <span className="ml-2">
-                {!failed
-                  ? "Deploying Your Website ..."
-                  : "Deploying Your Website Failed"}
-              </span>
-            )}
-          </div>
-        )}
+        }
         <div className="flex flex-col space-y-1.5 mt-8">
           <Label htmlFor="link">Website Link</Label>
-          <Input
-            disabled={!deployed}
-            id="link"
-            placeholder="Your Website Link"
-            value={deployed ? `${web}/index.html` : ""}
-          />
+          <div className="relative">
+            <Input
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!deployed}
+              id="link"
+              placeholder="Your Website Link"
+              value={deployed ? `${web}/index.html` : ""}
+            />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger
+                  className={`absolute inset-y-0 right-0 flex items-center px-2 ${
+                    deployed ? "text-black" : "text-gray-400"
+                  }`}
+                >
+                  <Copy
+                    className="h-5 w-5 bg-white"
+                    color="grey"
+                    onClick={() => {
+                      toast("Website Link Copied!");
+                      navigator.clipboard.writeText(web);
+                    }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>Copy</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <Button onClick={() => handleWebsiteVisit()} disabled={!deployed}>
+        <Button onClick={handleWebsiteVisit} disabled={!deployed}>
           Visit
         </Button>
       </CardFooter>
